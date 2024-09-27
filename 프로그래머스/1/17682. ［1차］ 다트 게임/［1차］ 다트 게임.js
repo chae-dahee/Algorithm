@@ -30,5 +30,5 @@ function solution(dartResult) {
             }
         }
     }
-    return cnt.reduce((acc, cur)=>acc + cur, 0);
+    return cnt.reduce((acc, cur)=>acc + cur);
 }
