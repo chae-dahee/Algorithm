@@ -12,7 +12,6 @@ function solution(k, tangerine) {
     });
     
     let arr = Object.values(dict).sort((a,b)=>b-a);
-    
     for(const x of arr){
         ans++;
         if(k>x) k-=x;
