@@ -3,7 +3,6 @@ function solution(str1, str2) {
     const arr1 = makeStr(str1)
     const arr2 = makeStr(str2)
     if(arr1.length ===0 && arr2.length ===0) return 65536
-    console.log(arr1, arr2)
     
     let intersection = []
     let union = []
