@@ -1,0 +1,11 @@
+const filePath = process.platform === "linux" ? "dev/stdin" : "14_집합맵/1764.txt";
+const fs = require("fs");
+const input = fs.readFileSync(filePath).toString().trim().split("\n");
+const [n, m] = input[0].split(" ").map(Number);
+const noHear = input.slice(1, n + 1);
+const noSee = input.slice(n + 1);
+const noHearSet = new Set(noHear);
+const noSeeSet = new Set(noSee);
+const result = [...noHearSet].filter((v) => noSeeSet.has(v)).sort();
+console.log(result.length);
+console.log(result.join("\n"));
