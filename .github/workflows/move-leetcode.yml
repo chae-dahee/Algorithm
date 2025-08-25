@@ -52,8 +52,16 @@ jobs:
           if git status --porcelain | grep .; then
             git config --global user.name 'github-actions[bot]'
             git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+            
+            # 1. 로컬에 변경사항을 커밋
             git add -A
             git commit -m "chore: Move LeetCode solutions to LeetCode folder"
+            
+            # 2. 푸시하기 직전에 원격의 최신 변경사항을 pull 받아서 합침
+            #    --rebase 옵션은 히스토리를 깔끔하게 유지하기 위해 사용
+            git pull --rebase
+            
+            # 3. 합쳐진 최종 버전을 푸시
             git push
           else
             echo "No changes to commit"
