@@ -37,7 +37,7 @@ jobs:
           for d in [0-9][0-9][0-9][0-9]-*; do
             if [ -d "$d" ]; then
               echo "Moving directory: $d"
-              mv "$d" "LeetCode/" && found=1
+              git mv "$d" "LeetCode/" && found=1
             fi
           done
 
