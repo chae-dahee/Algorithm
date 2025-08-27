@@ -17,7 +17,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 2 # 최근 커밋 기록을 가져오기 위해 설정
+          fetch-depth: 0
+          
+      - name: Configure Git for case sensitivity
+        run: git config --global core.ignorecase false
 
       - name: Move LeetCode solutions
         run: |
@@ -46,19 +49,39 @@ jobs:
             echo "No matching directories found to move"
           fi
 
-      - name: Commit & Push changes
+      - name: Commit, Pull with Rebase, and Push with Retry
         run: |
-          # 변경사항이 있는지 확인
-          if git status --porcelain | grep .; then
-            git config --global user.name 'github-actions[bot]'
-            git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-            git add -A
-            # 커밋 메시지를 더 명확하게 변경하는 것을 추천합니다.
-            # git diff --name-only --cached 를 사용하여 이동된 파일 이름을 포함시킬 수 있습니다.
-            git commit -m "chore: Auto-move LeetCode solution"
-            
-            # 강제로 푸시하여 원격 브랜치를 덮어씌웁니다.
-            git push --force
-          else
-            echo "No changes to commit"
+          # 변경사항이 없으면 스텝을 성공으로 종료
+          if ! git status --porcelain | grep .; then
+            echo "No changes to commit. Workflow finished successfully."
+            exit 0
           fi
+
+          # Git 사용자 설정
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 1. 로컬에 먼저 변경사항을 커밋
+          #    add 명령은 git mv가 이미 처리했으므로 사실상 필요 없지만, 안전을 위해 유지
+          git add -A
+          git commit -m "chore: Auto-move LeetCode solution"
+
+          # 2. 푸시 재시도 로직 (최대 5번 시도)
+          retry_count=0
+          max_retries=5
+          until git push
+          do
+            retry_count=$((retry_count+1))
+            if [ $retry_count -ge $max_retries ]; then
+              echo "::error::Push failed after $max_retries retries."
+              exit 1
+            fi
+            
+            echo "Push failed due to remote changes. Retrying in 5 seconds... (Attempt ${retry_count})"
+            sleep 5
+            
+            # 3. 실패 시, 원격의 최신 상태를 가져와 rebase로 재정렬
+            git pull --rebase
+          done
+          
+          echo "Push successful!"
